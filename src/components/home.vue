@@ -38,7 +38,9 @@
                                     ></v-text-field>
                             </v-flex>
                             <v-flex v-if="pointsType == 2" >
-                                    Podaj współrzędne
+                                <v-layout row>
+                                    <v-flex align-content-start xs12><v-btn color="orange" >Dodaj punkt</v-btn></v-flex>
+                                </v-layout>
                             </v-flex>
                             <v-flex v-if="pointsType == 3" >
                                 <v-text-field
@@ -82,7 +84,7 @@
                     <v-card-media v-if="!isMapLoading" >
                         <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2517.432291198976!2d20.637764316046425!3d50.87870897953661!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x471827be35849801%3A0x99149978917cac90!2sPolitechnika+%C5%9Awi%C4%99tokrzyska!5e0!3m2!1spl!2spl!4v1520859135913" width="100%" height="auto" frameborder="0" style="border:0; min-height: 500px" allowfullscreen></iframe>
                     </v-card-media>
-                    <v-progress-circular v-if="isMapLoading" indeterminate :size="70" :width="7" color="green"></v-progress-circular>
+                    <v-progress-circular class="map-loading" v-if="isMapLoading" indeterminate :size="70" :width="7" color="green"></v-progress-circular>
                 </v-card>
             </v-flex>
         </v-layout>
@@ -97,7 +99,8 @@ export default {
     return {
       pointsType: 1,
       algType: 1,
-      isMapLoading: false
+      isMapLoading: false,
+      pointsAssigned: []
     }
   },
   methods: {
@@ -106,11 +109,16 @@ export default {
           setTimeout(() => {
               this.isMapLoading = false;
           }, 2000);
-      }
+      },
+      onPointAssginedPush () {
+          this.pointsAssigned.push({x: 0, y: 0, roads: []});
+      } 
   }
 }
 </script>
 
 <style scoped>
-
+    .map-loading {
+        margin-top: 180px;
+    }
 </style>
