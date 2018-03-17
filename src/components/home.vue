@@ -123,9 +123,9 @@
                 <v-flex align-content-center xs12>
                     <v-card height="500px" >
                         <v-progress-circular class="map-loading" v-if="isMapLoading" indeterminate :size="70" :width="7" color="green"></v-progress-circular>
-                        <code>
-                            {{result}}
-                        </code>
+                        <template v-if="!isMapLoading" >
+                            <canvas id="canvas" width="500" height="500" ></canvas>
+                        </template>
                     </v-card>
                 </v-flex>
             </v-layout>
@@ -174,6 +174,9 @@ export default {
             val => {
                 this.result = val.body;
                 this.isMapLoading = false;
+                setTimeout(() => {
+                    this.drawPoints();
+                }, 1000);
             }
         );
       },
@@ -225,6 +228,25 @@ export default {
               this.currentPoints = tmp;
           }
           reader.readAsText(files[0]);
+      },
+      drawPoints () {
+          var canvas = document.querySelector('#canvas');
+          if(canvas.getContext) {
+              var ctx = canvas.getContext('2d');
+
+              this.result.forEach((el, i) => {
+                  ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i+1) + ', ' + Math.floor(255 - 42.5 * i+1) + ', 0)';
+                  // ctx.fillRect(el.x, el.y, el.x, el.y);
+                  ctx.fillText('' + i, el.x, el.y);
+              });
+              for(let i = 0; i < this.result.length; i++) {
+                  ctx.beginPath();
+                  ctx.moveTo(this.result[i].x, this.result[i].y);
+                  ctx.lineTo(this.result[i+1].x, this.result[i+1].y);
+                  ctx.closePath();
+                  ctx.stroke();
+              }
+          }
       }
   }
 }
@@ -241,5 +263,8 @@ export default {
     .points-title {
         text-align: left;
         padding: 20px 0px;
+    }
+    #canvas {
+        border: 1px solid #ddd;
     }
 </style>
