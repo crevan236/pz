@@ -4,6 +4,10 @@
       <v-toolbar>
         <v-toolbar-title>Komiwojażer solver</v-toolbar-title>
         <v-spacer></v-spacer>
+        <v-toolbar-items class="hidden-sm-and-down">
+          <v-btn :to="{ path: '/' }" flat>Strona główna</v-btn>
+          <v-btn :to="{ path: '/info' }" flat>Instrukcja</v-btn>
+        </v-toolbar-items>
       </v-toolbar>
     </v-container>
     <router-view/>
@@ -24,5 +28,9 @@ export default {
 }
 #app > h1 {
   padding: 30px 0px;
+}
+.hidden-sm-and-down a {
+  text-decoration: none;
+  color: #2c3e50;
 }
 </style>

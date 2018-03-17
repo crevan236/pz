@@ -14,43 +14,52 @@
                                         :value="1"
                                       ></v-radio>
                                 </v-flex>
-                                <v-flex xs12>
+                                <!-- <v-flex xs12>
                                     <v-radio
                                       :key="2"
                                       :label="'Podaj współrzędne'"
                                       :value="2"
                                     ></v-radio>
-                                </v-flex>
+                                </v-flex> -->
                                 <v-flex xs12>
                                     <v-radio
-                                      :key="3"
+                                      :key="2"
                                       :label="'Wczytaj z pliku'"
-                                      :value="3"
+                                      :value="2"
                                     ></v-radio>
                                 </v-flex>
                             </v-radio-group>
                         </v-layout>
                         <v-layout row>
-                            <v-flex v-if="pointsType == 1" >
+                            <template v-if="pointsType == 1">
+                                <v-flex>
                                     <v-text-field
+                                        v-model="amountOfPoints"
                                         label="Podaj ilość punktów"
                                         required
                                     ></v-text-field>
-                            </v-flex>
-                            <v-flex v-if="pointsType == 2" >
+                                </v-flex>
+                                <v-flex>
+                                    <v-btn color="orange" @click="generatePoints" ><v-icon>play_arrow</v-icon></v-btn>
+                                </v-flex>
+                            </template>
+                            <v-flex v-if="pointsType == 3" >
                                 <v-layout row>
-                                    <v-flex align-content-start xs12><v-btn color="orange" >Dodaj punkt</v-btn></v-flex>
+                                    <v-flex xs5><v-text-field v-model="currentPoint.x" label="X:" required></v-text-field></v-flex>
+                                    <v-flex xs5><v-text-field v-model="currentPoint.y" label="Y:" required></v-text-field></v-flex>
+                                    <v-flex align-content-start xs2>
+                                        <v-btn color="orange" @click="onAddPoint" ><v-icon>playlist_add</v-icon></v-btn>
+                                    </v-flex>
                                 </v-layout>
                             </v-flex>
-                            <v-flex v-if="pointsType == 3" >
-                                <v-text-field
-                                    label="Wybierz plik"
-                                    required
-                                ></v-text-field>
+                            <v-flex v-if="pointsType == 2" >
+                                <vue-dropzone v-on:vdropzone-upload-progress="onFileProgress" v-on:vdropzone-complete="onFileAdded" ref="fileDrop" id="dropzone" :options="dropzoneOptions"></vue-dropzone>
                             </v-flex>
                         </v-layout>
                     </v-card-text>
                 </v-card>
+            </v-flex>
+            <v-flex xs6>
                 <v-card>
                     <v-card-title>
                         <h3>Wybór algorytmu</h3>
@@ -60,59 +69,163 @@
                               <v-radio
                                 :key="1"
                                 :label="'Permutacje'"
-                                :value="1"
+                                :value="'PERM'"
                               ></v-radio>
                               <v-radio
                                 :key="2"
                                 :label="'Zachłanny'"
-                                :value="2"
+                                :value="'GREEDY'"
                               ></v-radio>
                               <v-radio
                                 :key="3"
                                 :label="'Zachłanny rozszerzony'"
-                                :value="3"
+                                :value="'GREEDYS'"
                               ></v-radio>
                             </v-radio-group>
                     </v-card-text>
                     <v-card-actions>
-                        <v-btn v-on:click="onRoadCount" >Wyznacz trasę</v-btn>
+                        <v-btn color="orange" v-on:click="onRoadCount" >Wyznacz trasę</v-btn>
                     </v-card-actions>
                 </v-card>
             </v-flex>
-            <v-flex align-content-center xs6>
-                <v-card height="500px" >
-                    <v-card-media v-if="!isMapLoading" >
-                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2517.432291198976!2d20.637764316046425!3d50.87870897953661!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x471827be35849801%3A0x99149978917cac90!2sPolitechnika+%C5%9Awi%C4%99tokrzyska!5e0!3m2!1spl!2spl!4v1520859135913" width="100%" height="auto" frameborder="0" style="border:0; min-height: 500px" allowfullscreen></iframe>
-                    </v-card-media>
-                    <v-progress-circular class="map-loading" v-if="isMapLoading" indeterminate :size="70" :width="7" color="green"></v-progress-circular>
-                </v-card>
-            </v-flex>
         </v-layout>
+        <template v-if="currentPoints.length > 0" >
+            <v-layout row>
+                <v-flex xs12><h4 class="title points-title" >Punkty:</h4></v-flex>
+            </v-layout>
+            <v-layout row>
+                <v-flex class="scrolling-box" xs12>
+                    <v-card >
+                        <v-card-text>
+                            <v-list two-line>
+                              <template v-for="(item, index) in currentPoints">
+                                <v-list-tile ripple :key="index" >
+                                  <v-list-tile-content>
+                                    <v-list-tile-title>Punkt: {{ index + 1 }}</v-list-tile-title>
+                                    <v-list-tile-sub-title class="text--primary">
+                                        X: {{ item.x }} Y: {{ item.y }}
+                                    </v-list-tile-sub-title>
+                                  </v-list-tile-content>
+                                  <v-list-tile-action>
+                                    <v-btn flat color="orange" @click="currentPoints.splice(index, 1)" ><v-icon color="grey">delete</v-icon></v-btn>
+                                  </v-list-tile-action>
+                                </v-list-tile>
+                                <v-divider v-if="index + 1 < currentPoints.length" :key="`divider-${index}`"></v-divider>
+                              </template>
+                            </v-list>
+                        </v-card-text>
+                    </v-card>
+                </v-flex>
+            </v-layout>
+        </template>
+        <template v-if="result.length > 0" >
+            <v-layout row>
+                <v-flex align-content-center xs12>
+                    <v-card height="500px" >
+                        <v-progress-circular class="map-loading" v-if="isMapLoading" indeterminate :size="70" :width="7" color="green"></v-progress-circular>
+                        <code>
+                            {{result}}
+                        </code>
+                    </v-card>
+                </v-flex>
+            </v-layout>
+        </template>
     </v-container>
 </template>
 
 <script>
-/* eslist-disable */
+import vue2Dropzone from 'vue2-dropzone'
+import 'vue2-dropzone/dist/vue2Dropzone.css'
+
 export default {
   name: 'home',
+  components: {
+      vueDropzone: vue2Dropzone
+  },
   data () {
     return {
       pointsType: 1,
-      algType: 1,
+      algType: 'GREEDY',
       isMapLoading: false,
-      pointsAssigned: []
+      pointsAssigned: [],
+      amountOfPoints: null,
+      result: [],
+      dropzone: '',
+      dropzoneOptions: {
+          url: 'https://localhost:8080',
+          thumbnailWidth: 50,
+          maxFilesize: 0.5,
+          maxFiles: 1,
+          acceptedFiles: 'application/json'
+      },
+      currentPoint: {x: null, y: null},
+      currentPoints: []
     }
   },
   methods: {
       onRoadCount () {
-          this.isMapLoading = true;
-          setTimeout(() => {
-              this.isMapLoading = false;
-          }, 2000);
+        this.isMapLoading = true;
+        
+        var model = {
+            algorithm: this.algType,
+            points: this.currentPoints
+        }
+        this.$http.get('http://localhost:3000/result').then(
+            val => {
+                this.result = val.body;
+                this.isMapLoading = false;
+            }
+        );
       },
       onPointAssginedPush () {
           this.pointsAssigned.push({x: 0, y: 0, roads: []});
-      } 
+      },
+      onFileAdded (file) {
+          this.readLoadedFile();
+      },
+      onFileProgress (file, progress, bytes) {
+          if (progress === 100) {
+              this.readLoadedFile();
+          }
+      },
+      onAddPoint () {
+          const tmp = {
+              name: Date.now(),
+              x: this.currentPoint.x,
+              y: this.currentPoint.y
+          }
+          this.currentPoints.push(tmp);
+          this.currentPoint.x = null;
+          this.currentPoint.y = null;
+      },
+      generatePoints () {
+          if (this.amountOfPoints <= 100) {
+            var tmp = [];
+            for (var i = 0; i < this.amountOfPoints; i++) {
+                var routes = [];
+                for (var j = 0; j < Math.round((Math.random() * 100)%this.amountOfPoints); j++) {
+                    routes.push(Math.round((Math.random() * 100)%this.amountOfPoints));
+                }
+                tmp.push({
+                    name: '' + Date.now() + Math.random(),
+                    x: Math.random() * 100,
+                    y: Math.random() * 100,
+                    routes: routes
+                });
+            }
+            this.currentPoints = tmp;
+          }
+      },
+      readLoadedFile () {
+          var files = this.$refs.fileDrop.getAcceptedFiles();
+          var reader = new FileReader();
+          reader.onloadend = (f) => {
+              var tmp = JSON.parse(f.target.result);
+              
+              this.currentPoints = tmp;
+          }
+          reader.readAsText(files[0]);
+      }
   }
 }
 </script>
@@ -120,5 +233,13 @@ export default {
 <style scoped>
     .map-loading {
         margin-top: 180px;
+    }
+    .scrolling-box {
+        max-height: 200px;
+        overflow-y: scroll;
+    }
+    .points-title {
+        text-align: left;
+        padding: 20px 0px;
     }
 </style>
