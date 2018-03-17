@@ -3,7 +3,7 @@
         <v-layout row>
             <v-flex xs6>
                 <v-card>
-                    <v-card-title><h3>Podaj ilość punktów</h3></v-card-title>
+                    <v-card-title><h3 class="title" >Podaj ilość punktów</h3></v-card-title>
                     <v-card-text>
                         <v-layout row>
                             <v-radio-group v-model="pointsType">
@@ -40,7 +40,7 @@
                                     ></v-text-field>
                                 </v-flex>
                                 <v-flex>
-                                    <v-btn color="orange" @click="generatePoints" ><v-icon>play_arrow</v-icon></v-btn>
+                                    <v-btn color="orange" class="white--text" @click="generatePoints" ><v-icon>play_arrow</v-icon></v-btn>
                                 </v-flex>
                             </template>
                             <v-flex v-if="pointsType == 3" >
@@ -48,7 +48,7 @@
                                     <v-flex xs5><v-text-field v-model="currentPoint.x" label="X:" required></v-text-field></v-flex>
                                     <v-flex xs5><v-text-field v-model="currentPoint.y" label="Y:" required></v-text-field></v-flex>
                                     <v-flex align-content-start xs2>
-                                        <v-btn color="orange" @click="onAddPoint" ><v-icon>playlist_add</v-icon></v-btn>
+                                        <v-btn color="orange" class="white--text" @click="onAddPoint" ><v-icon>playlist_add</v-icon></v-btn>
                                     </v-flex>
                                 </v-layout>
                             </v-flex>
@@ -58,78 +58,93 @@
                         </v-layout>
                     </v-card-text>
                 </v-card>
+                <template v-if="currentPoints.length > 0" >
+                    <v-layout row>
+                        <v-flex xs12>
+                            <v-toolbar>
+                                <v-toolbar-title>Punkty:</v-toolbar-title>
+                            </v-toolbar>
+                        </v-flex>
+                    </v-layout>
+                    <v-layout row>
+                        <v-flex class="scrolling-box" xs12>
+                            <v-card >
+                                <v-card-text>
+                                    <v-list two-line>
+                                      <template v-for="(item, index) in currentPoints">
+                                        <v-list-tile ripple :key="index" >
+                                          <v-list-tile-content>
+                                            <v-list-tile-title>Punkt: {{ index + 1 }}</v-list-tile-title>
+                                            <v-list-tile-sub-title class="text--primary">
+                                                X: {{ item.x }} Y: {{ item.y }}
+                                            </v-list-tile-sub-title>
+                                          </v-list-tile-content>
+                                          <v-list-tile-action>
+                                            <v-btn flat color="orange" @click="currentPoints.splice(index, 1)" ><v-icon color="grey">delete</v-icon></v-btn>
+                                          </v-list-tile-action>
+                                        </v-list-tile>
+                                        <v-divider v-if="index + 1 < currentPoints.length" :key="`divider-${index}`"></v-divider>
+                                      </template>
+                                    </v-list>
+                                </v-card-text>
+                            </v-card>
+                        </v-flex>
+                    </v-layout>
+                </template>
             </v-flex>
             <v-flex xs6>
-                <v-card>
-                    <v-card-title>
-                        <h3>Wybór algorytmu</h3>
-                    </v-card-title>
-                    <v-card-text>
-                            <v-radio-group v-model="algType">
-                              <v-radio
-                                :key="1"
-                                :label="'Permutacje'"
-                                :value="'PERM'"
-                              ></v-radio>
-                              <v-radio
-                                :key="2"
-                                :label="'Zachłanny'"
-                                :value="'GREEDY'"
-                              ></v-radio>
-                              <v-radio
-                                :key="3"
-                                :label="'Zachłanny rozszerzony'"
-                                :value="'GREEDYS'"
-                              ></v-radio>
-                            </v-radio-group>
-                    </v-card-text>
-                    <v-card-actions>
-                        <v-btn color="orange" v-on:click="onRoadCount" >Wyznacz trasę</v-btn>
-                    </v-card-actions>
-                </v-card>
+                <v-layout row>
+                    <v-flex fill-height xs12>
+                        <v-card>
+                            <v-card-title>
+                                <h3 class="title" >Wybór algorytmu</h3>
+                            </v-card-title>
+                            <v-card-text>
+                                    <v-radio-group v-model="algType">
+                                      <v-radio
+                                        :key="1"
+                                        :label="'Permutacje'"
+                                        :value="'PERM'"
+                                      ></v-radio>
+                                      <v-radio
+                                        :key="2"
+                                        :label="'Zachłanny'"
+                                        :value="'GREEDY'"
+                                      ></v-radio>
+                                      <v-radio
+                                        :key="3"
+                                        :label="'Zachłanny rozszerzony'"
+                                        :value="'GREEDYS'"
+                                      ></v-radio>
+                                    </v-radio-group>
+                            </v-card-text>
+                            <v-card-actions>
+                                <v-btn color="orange" class="white--text" v-on:click="onRoadCount" >Wyznacz trasę</v-btn>
+                            </v-card-actions>
+                        </v-card>
+                    </v-flex>
+                </v-layout>
+                <template v-if="result.length > 0" >
+                    <v-layout row>
+                        <v-flex xs12>
+                            <v-toolbar>
+                                <v-toolbar-title>Trasa:</v-toolbar-title>
+                            </v-toolbar>
+                        </v-flex>
+                    </v-layout>
+                    <v-layout row>
+                        <v-flex align-content-center xs12>
+                            <v-card height="500px" >
+                                <v-progress-circular class="map-loading" v-if="isMapLoading" indeterminate :size="70" :width="7" color="green"></v-progress-circular>
+                                <template v-if="!isMapLoading" >
+                                    <canvas id="canvas" width="500" height="500" ></canvas>
+                                </template>
+                            </v-card>
+                        </v-flex>
+                    </v-layout>
+                </template>
             </v-flex>
         </v-layout>
-        <template v-if="currentPoints.length > 0" >
-            <v-layout row>
-                <v-flex xs12><h4 class="title points-title" >Punkty:</h4></v-flex>
-            </v-layout>
-            <v-layout row>
-                <v-flex class="scrolling-box" xs12>
-                    <v-card >
-                        <v-card-text>
-                            <v-list two-line>
-                              <template v-for="(item, index) in currentPoints">
-                                <v-list-tile ripple :key="index" >
-                                  <v-list-tile-content>
-                                    <v-list-tile-title>Punkt: {{ index + 1 }}</v-list-tile-title>
-                                    <v-list-tile-sub-title class="text--primary">
-                                        X: {{ item.x }} Y: {{ item.y }}
-                                    </v-list-tile-sub-title>
-                                  </v-list-tile-content>
-                                  <v-list-tile-action>
-                                    <v-btn flat color="orange" @click="currentPoints.splice(index, 1)" ><v-icon color="grey">delete</v-icon></v-btn>
-                                  </v-list-tile-action>
-                                </v-list-tile>
-                                <v-divider v-if="index + 1 < currentPoints.length" :key="`divider-${index}`"></v-divider>
-                              </template>
-                            </v-list>
-                        </v-card-text>
-                    </v-card>
-                </v-flex>
-            </v-layout>
-        </template>
-        <template v-if="result.length > 0" >
-            <v-layout row>
-                <v-flex align-content-center xs12>
-                    <v-card height="500px" >
-                        <v-progress-circular class="map-loading" v-if="isMapLoading" indeterminate :size="70" :width="7" color="green"></v-progress-circular>
-                        <template v-if="!isMapLoading" >
-                            <canvas id="canvas" width="500" height="500" ></canvas>
-                        </template>
-                    </v-card>
-                </v-flex>
-            </v-layout>
-        </template>
     </v-container>
 </template>
 
@@ -230,21 +245,22 @@ export default {
           reader.readAsText(files[0]);
       },
       drawPoints () {
+          this.result.forEach(el => { el.x = el.x*5, el.y = el.y*5 });
           var canvas = document.querySelector('#canvas');
           if(canvas.getContext) {
               var ctx = canvas.getContext('2d');
-
-              this.result.forEach((el, i) => {
-                  ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i+1) + ', ' + Math.floor(255 - 42.5 * i+1) + ', 0)';
-                  // ctx.fillRect(el.x, el.y, el.x, el.y);
-                  ctx.fillText('' + i, el.x, el.y);
-              });
+        
               for(let i = 0; i < this.result.length; i++) {
-                  ctx.beginPath();
-                  ctx.moveTo(this.result[i].x, this.result[i].y);
-                  ctx.lineTo(this.result[i+1].x, this.result[i+1].y);
-                  ctx.closePath();
-                  ctx.stroke();
+                  /// ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i+1) + ', ' + Math.floor(255 - 42.5 * i+1) + ',' + '0)';
+                  ctx.fillStyle = 'red';
+                  ctx.fillText('' + i, this.result[i].x, this.result[i].y);
+                  try {
+                      ctx.beginPath();
+                      ctx.moveTo(this.result[i].x, this.result[i].y);
+                      ctx.lineTo(this.result[i+1].x, this.result[i+1].y);
+                      ctx.closePath();
+                      ctx.stroke();
+                  } catch (e) {}
               }
           }
       }
@@ -257,7 +273,7 @@ export default {
         margin-top: 180px;
     }
     .scrolling-box {
-        max-height: 200px;
+        max-height: 350px;
         overflow-y: scroll;
     }
     .points-title {
