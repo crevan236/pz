@@ -180,12 +180,12 @@ export default {
   methods: {
       onRoadCount () {
         this.isMapLoading = true;
-        
+
         var model = {
             algorithm: this.algType,
             points: this.currentPoints
         }
-        this.$http.get('http://localhost:3000/result').then(
+        this.$http.post('http://localhost:9090/tsp', model).then(
             val => {
                 this.result = val.body;
                 this.isMapLoading = false;
@@ -239,7 +239,7 @@ export default {
           var reader = new FileReader();
           reader.onloadend = (f) => {
               var tmp = JSON.parse(f.target.result);
-              
+
               this.currentPoints = tmp;
           }
           reader.readAsText(files[0]);
@@ -249,7 +249,7 @@ export default {
           var canvas = document.querySelector('#canvas');
           if(canvas.getContext) {
               var ctx = canvas.getContext('2d');
-        
+
               for(let i = 0; i < this.result.length; i++) {
                   /// ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i+1) + ', ' + Math.floor(255 - 42.5 * i+1) + ',' + '0)';
                   ctx.fillStyle = 'red';
