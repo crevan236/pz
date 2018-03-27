@@ -3,7 +3,7 @@
         <v-layout row>
             <v-flex xs6>
                 <v-card>
-                    <v-card-title><h3 class="title" >Podaj ilość punktów</h3></v-card-title>
+                    <v-card-title><h3 class="title" >Podaj liczbę punktów</h3></v-card-title>
                     <v-card-text>
                         <v-layout row>
                             <v-radio-group v-model="pointsType">
@@ -167,7 +167,7 @@ export default {
       result: [],
       dropzone: '',
       dropzoneOptions: {
-          url: 'https://localhost:8080',
+          url: 'https://localhost:3000',
           thumbnailWidth: 50,
           maxFilesize: 0.5,
           maxFiles: 1,
@@ -242,7 +242,11 @@ export default {
 
               this.currentPoints = tmp;
           }
-          reader.readAsText(files[0]);
+          try {
+              reader.readAsText(files[0]);
+          } catch (e) {
+              console.warn('Wrong file format!!!');
+          }
       },
       drawPoints () {
           this.result.forEach(el => { el.x = el.x*5, el.y = el.y*5 });
