@@ -5,8 +5,11 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.tsp.springapp.dto.Point;
 import pl.tsp.springapp.dto.TSP;
 import pl.tsp.springapp.service.TSPService;
+
+import java.util.Queue;
 
 
 @RestController
@@ -24,8 +27,8 @@ public class TSPRestController {
   @RequestMapping(method = RequestMethod.POST)
   private ResponseEntity setRoute(@RequestBody TSP tsp){
     try {
-      this.tspService.setRoute(tsp);
-      return new ResponseEntity(tsp.getPoints(), HttpStatus.OK);
+      Queue<Point> route = this.tspService.setRoute(tsp);
+      return new ResponseEntity(route, HttpStatus.OK);
     }
     catch(Exception e){
       e.printStackTrace();
