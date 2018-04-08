@@ -9,19 +9,16 @@ public class GreedyAlgorithmService extends AlgorithmService {
   @Override
   protected Map<Integer, Route> setRoute(List<Point> points) throws Exception {
     Map<Integer, Route> routesMap = new HashMap<>();
-    for (int i = 0; i < points.size(); i++) {
-      try {
-        routesMap.put(i, new Route(greedyAlg(points, i)));
-      } catch (Exception ex) {
-        ex.printStackTrace();
-        continue;
-      }
-    }
 
+    try {
+      routesMap.put(0, new Route(greedyAlg(points, 0)));
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
     return routesMap;
   }
 
-  private Queue<Point> greedyAlg(List<Point> points, int start) throws Exception {
+  protected Queue<Point> greedyAlg(List<Point> points, int start) throws Exception {
     List<Point> tmpPoints = clonePoints(points);
     Queue<Point> route = new LinkedList<>();
 
@@ -67,12 +64,5 @@ public class GreedyAlgorithmService extends AlgorithmService {
       throw new Exception("Nie znaleziono żadnej drogi dla punktu " + start);
 
     return min;
-  }
-
-  private List<Point> clonePoints(List<Point> points) {
-    List<Point> tmpPoints = new ArrayList<Point>(points.size());
-    for (Point tmpPoint : points)
-      tmpPoints.add(new Point(tmpPoint));
-    return tmpPoints;
   }
 }

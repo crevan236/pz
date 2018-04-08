@@ -4,10 +4,7 @@ import org.springframework.stereotype.Service;
 import pl.tsp.springapp.dto.Point;
 import pl.tsp.springapp.dto.Route;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 
 @Service
 public abstract class AlgorithmService {
@@ -27,7 +24,7 @@ public abstract class AlgorithmService {
     return Math.sqrt(xDistance + yDistance);
   }
 
-  protected void calcRoute(Map<Integer, Route> routesMap) throws Exception {
+  private void calcRoute(Map<Integer, Route> routesMap) throws Exception {
     for(Map.Entry<Integer, Route> entry : routesMap.entrySet()){
       Route route = entry.getValue();
       double distance = 0;
@@ -41,7 +38,7 @@ public abstract class AlgorithmService {
     }
   }
 
-  protected Queue<Point> findMinRoute(Map<Integer, Route> routesMap) throws Exception {
+  private Queue<Point> findMinRoute(Map<Integer, Route> routesMap) throws Exception {
     Queue<Point> minRoute = new LinkedList<>();
     double minDistance = 0;
     for(Map.Entry<Integer, Route> entry : routesMap.entrySet()) {
@@ -52,5 +49,12 @@ public abstract class AlgorithmService {
       }
     }
     return minRoute;
+  }
+
+  protected List<Point> clonePoints(List<Point> points) {
+    List<Point> tmpPoints = new ArrayList<>(points.size());
+    for (Point tmpPoint : points)
+      tmpPoints.add(new Point(tmpPoint));
+    return tmpPoints;
   }
 }

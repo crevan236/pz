@@ -3,6 +3,7 @@ package pl.tsp.springapp.service;
 import org.springframework.stereotype.Service;
 import pl.tsp.springapp.dto.Point;
 import pl.tsp.springapp.dto.TSP;
+import pl.tsp.springapp.service.algorithm.ExtendedGreedyAlgorithmService;
 import pl.tsp.springapp.service.algorithm.GreedyAlgorithmService;
 import pl.tsp.springapp.service.algorithm.PermutationAlgorithmService;
 
@@ -17,7 +18,7 @@ public class TSPService {
       case "GREEDY" :
         return new GreedyAlgorithmService().manageAlgorithm(tsp.getPoints());
       case "GREEDYS":
-        return null;
+        return new ExtendedGreedyAlgorithmService().manageAlgorithm(tsp.getPoints());
       case "PERM":
         return new PermutationAlgorithmService().manageAlgorithm(tsp.getPoints());
       default:
