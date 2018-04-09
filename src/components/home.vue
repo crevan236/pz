@@ -14,13 +14,13 @@
                                         :value="1"
                                       ></v-radio>
                                 </v-flex>
-                                <!-- <v-flex xs12>
+                                <v-flex xs12>
                                     <v-radio
                                       :key="2"
                                       :label="'Podaj współrzędne'"
-                                      :value="2"
+                                      :value="3"
                                     ></v-radio>
-                                </v-flex> -->
+                                </v-flex>
                                 <v-flex xs12>
                                     <v-radio
                                       :key="2"
@@ -36,19 +36,32 @@
                                     <v-text-field
                                         v-model="amountOfPoints"
                                         label="Podaj ilość punktów"
-                                        required
+                                        :error-messages="nofpErrors"
+                                        @input="$v.amountOfPoints.$touch()"
+                                        @blur="$v.amountOfPoints.$touch()"
                                     ></v-text-field>
                                 </v-flex>
                                 <v-flex>
-                                    <v-btn color="orange" class="white--text" @click="generatePoints" ><v-icon>play_arrow</v-icon></v-btn>
+                                    <v-btn color="orange" class="white--text" @click="generatePoints" :disabled="$v.amountOfPoints.$invalid" ><v-icon>play_arrow</v-icon></v-btn>
                                 </v-flex>
                             </template>
                             <v-flex v-if="pointsType == 3" >
                                 <v-layout row>
-                                    <v-flex xs5><v-text-field v-model="currentPoint.x" label="X:" required></v-text-field></v-flex>
-                                    <v-flex xs5><v-text-field v-model="currentPoint.y" label="Y:" required></v-text-field></v-flex>
+                                    <v-flex xs6><v-text-field v-model="currentPoint.x" label="X:" @input="$v.currentPoint.x.$touch()" @blur="$v.currentPoint.x.$touch()" required></v-text-field></v-flex>
+                                    <v-flex xs6><v-text-field v-model="currentPoint.y" label="Y:" @input="$v.currentPoint.y.$touch()" @blur="$v.currentPoint.y.$touch()" required></v-text-field></v-flex>
+                                </v-layout>
+                                <v-layout row>
+                                    <v-flex xs10>
+                                        <multiselect
+                                          v-model="currentPoint.routes"
+                                          :options="currentPoints"
+                                          :multiple="true"
+                                          placeholder="Drogi:"
+                                          label="name">
+                                        </multiselect>
+                                    </v-flex>
                                     <v-flex align-content-start xs2>
-                                        <v-btn color="orange" class="white--text" @click="onAddPoint" ><v-icon>playlist_add</v-icon></v-btn>
+                                        <v-btn color="orange" class="white--text" @click="onAddPoint" :disabled="$v.currentPoint.x.$invalid || $v.currentPoint.y.$invalid" ><v-icon>playlist_add</v-icon></v-btn>
                                     </v-flex>
                                 </v-layout>
                             </v-flex>
@@ -88,6 +101,12 @@
                                     </v-list>
                                 </v-card-text>
                             </v-card>
+                        </v-flex>
+                    </v-layout>
+                    <v-layout row>
+                        <v-flex xs12>
+                            <v-btn color="orange" class="white--text" @click="saveFile" >Zapisz do pliku</v-btn>
+                            <a target="_blank" :href="fileURL" download="generated.json" >Kliknij</a>
                         </v-flex>
                     </v-layout>
                 </template>
@@ -151,11 +170,23 @@
 <script>
 import vue2Dropzone from 'vue2-dropzone'
 import 'vue2-dropzone/dist/vue2Dropzone.css'
+import { validationMixin } from 'vuelidate'
+import { required, between } from 'vuelidate/lib/validators'
+import Multiselect from 'vue-multiselect'
 
 export default {
   name: 'home',
   components: {
-      vueDropzone: vue2Dropzone
+      vueDropzone: vue2Dropzone,
+      multiselect: Multiselect
+  },
+  mixins: [ validationMixin ],
+  validations: {
+      amountOfPoints: { between: between(0, 100) },
+      currentPoint: {
+          x: { between: between(0, 100) },
+          y: { between: between(0, 100) }
+      }
   },
   data () {
     return {
@@ -173,9 +204,30 @@ export default {
           maxFiles: 1,
           acceptedFiles: 'application/json'
       },
-      currentPoint: {x: null, y: null},
-      currentPoints: []
+      currentPoint: {x: null, y: null, routes: []},
+      currentPoints: [],
+      fileURL: ''
     }
+  },
+  computed: {
+      nofpErrors () {
+        const errors = []
+        if (!this.$v.amountOfPoints.$dirty) return errors
+        !this.$v.amountOfPoints.between && errors.push('Wartość powinna być pomiędzy 0 a 100')
+        return errors
+      },
+      cordsxErrors () {
+        const errors = []
+        if (!this.$v.currentPoint.x.$dirty) return errors
+        !this.$v.currentPoint.x.between && errors.push('Wartość powinna być pomiędzy 0 a 100')
+        return errors
+      },
+      cordsyErrors () {
+        const errors = []
+        if (!this.$v.currentPoint.y.$dirty) return errors
+        !this.$v.currentPoint.y.between && errors.push('Wartość powinna być pomiędzy 0 a 100')
+        return errors
+      }
   },
   methods: {
       onRoadCount () {
@@ -267,11 +319,21 @@ export default {
                   } catch (e) {}
               }
           }
+      },
+      saveFile () {
+        let newFile = null;
+        try {
+            newFile = new File(this.currentPoints, "generatedPoints.json", { type: 'text/plain' });
+        } catch (e) {
+            newFile = new Blob(this.currentPoints, { type: 'application/json', charset: 'utf-8' });
+        }
+        const url = URL.createObjectURL(newFile);
+        this.fileURL = url;
       }
   }
 }
 </script>
-
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
 <style scoped>
     .map-loading {
         margin-top: 180px;
