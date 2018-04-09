@@ -57,7 +57,8 @@
                                           :options="currentPoints"
                                           :multiple="true"
                                           placeholder="Drogi:"
-                                          label="name">
+                                          :customLabel="generateCustomLabel"
+                                          >
                                         </multiselect>
                                     </v-flex>
                                     <v-flex align-content-start xs2>
@@ -106,7 +107,7 @@
                     <v-layout row>
                         <v-flex xs12>
                             <v-btn color="orange" class="white--text" @click="saveFile" >Zapisz do pliku</v-btn>
-                            <a target="_blank" :href="fileURL" download="generated.json" >Kliknij</a>
+                            <a target="_blank" download="generated.json" id="fileDownloader" style="visibility: hidden" >Kliknij</a>
                         </v-flex>
                     </v-layout>
                 </template>
@@ -205,8 +206,7 @@ export default {
           acceptedFiles: 'application/json'
       },
       currentPoint: {x: null, y: null, routes: []},
-      currentPoints: [],
-      fileURL: ''
+      currentPoints: []
     }
   },
   computed: {
@@ -273,7 +273,7 @@ export default {
             var tmp = [];
             for (var i = 0; i < this.amountOfPoints; i++) {
                 var routes = [];
-                for (var j = 0; j < Math.round((Math.random() * 100)%this.amountOfPoints); j++) {
+                for (var j = 0; j < Math.round((Math.random() * 100)%this.amountOfPoints) + 3; j++) {
                     routes.push(Math.round((Math.random() * 100)%this.amountOfPoints));
                 }
                 tmp.push({
@@ -323,12 +323,18 @@ export default {
       saveFile () {
         let newFile = null;
         try {
-            newFile = new File(this.currentPoints, "generatedPoints.json", { type: 'text/plain' });
+            newFile = new File(JSON.stringify(this.currentPoints), "generatedPoints.json", { type: 'application/json' });
         } catch (e) {
-            newFile = new Blob(this.currentPoints, { type: 'application/json', charset: 'utf-8' });
+            console.warn('blob');
+            newFile = new Blob([JSON.stringify(this.currentPoints)], { type: 'text/plain' });
         }
         const url = URL.createObjectURL(newFile);
-        this.fileURL = url;
+        let btn = document.querySelector('#fileDownloader');
+        btn.href = url;
+        btn.click();
+      },
+      generateCustomLabel (obj) {
+          return `Punkt: ${this.currentPoints.findIndex(el => el.name === obj.name)}`;
       }
   }
 }
