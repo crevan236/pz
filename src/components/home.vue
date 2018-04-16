@@ -1,6 +1,11 @@
 <template>
     <v-container grid-list-md>
         <v-layout row>
+            <v-flex xs12>
+                <Map :points="currentPoints" :paths="result" ></Map>
+            </v-flex>
+        </v-layout>
+        <v-layout row>
             <v-flex xs6>
                 <v-card>
                     <v-card-title><h3 class="title" >Podaj liczbę punktów</h3></v-card-title>
@@ -35,7 +40,7 @@
                                 <v-flex>
                                     <v-text-field
                                         v-model="amountOfPoints"
-                                        label="Podaj ilość punktów"
+                                        label="Podaj liczbę punktów"
                                         :error-messages="nofpErrors"
                                         @input="$v.amountOfPoints.$touch()"
                                         @blur="$v.amountOfPoints.$touch()"
@@ -72,6 +77,39 @@
                         </v-layout>
                     </v-card-text>
                 </v-card>
+                <v-layout row>
+                    <v-flex fill-height xs12>
+                        <v-card>
+                            <v-card-title>
+                                <h3 class="title" >Wybór algorytmu</h3>
+                            </v-card-title>
+                            <v-card-text>
+                                    <v-radio-group v-model="algType">
+                                      <v-radio
+                                        :key="1"
+                                        :label="'Permutacje'"
+                                        :value="'PERM'"
+                                      ></v-radio>
+                                      <v-radio
+                                        :key="2"
+                                        :label="'Zachłanny'"
+                                        :value="'GREEDY'"
+                                      ></v-radio>
+                                      <v-radio
+                                        :key="3"
+                                        :label="'Zachłanny rozszerzony'"
+                                        :value="'GREEDYS'"
+                                      ></v-radio>
+                                    </v-radio-group>
+                            </v-card-text>
+                            <v-card-actions>
+                                <v-btn color="orange" class="white--text" v-on:click="onRoadCount" >Wyznacz trasę</v-btn>
+                            </v-card-actions>
+                        </v-card>
+                    </v-flex>
+                </v-layout>
+            </v-flex>
+            <v-flex xs6>
                 <template v-if="currentPoints.length > 0" >
                     <v-layout row>
                         <v-flex xs12>
@@ -112,58 +150,6 @@
                     </v-layout>
                 </template>
             </v-flex>
-            <v-flex xs6>
-                <v-layout row>
-                    <v-flex fill-height xs12>
-                        <v-card>
-                            <v-card-title>
-                                <h3 class="title" >Wybór algorytmu</h3>
-                            </v-card-title>
-                            <v-card-text>
-                                    <v-radio-group v-model="algType">
-                                      <v-radio
-                                        :key="1"
-                                        :label="'Permutacje'"
-                                        :value="'PERM'"
-                                      ></v-radio>
-                                      <v-radio
-                                        :key="2"
-                                        :label="'Zachłanny'"
-                                        :value="'GREEDY'"
-                                      ></v-radio>
-                                      <v-radio
-                                        :key="3"
-                                        :label="'Zachłanny rozszerzony'"
-                                        :value="'GREEDYS'"
-                                      ></v-radio>
-                                    </v-radio-group>
-                            </v-card-text>
-                            <v-card-actions>
-                                <v-btn color="orange" class="white--text" v-on:click="onRoadCount" >Wyznacz trasę</v-btn>
-                            </v-card-actions>
-                        </v-card>
-                    </v-flex>
-                </v-layout>
-                <template v-if="result.length > 0" >
-                    <v-layout row>
-                        <v-flex xs12>
-                            <v-toolbar>
-                                <v-toolbar-title>Trasa:</v-toolbar-title>
-                            </v-toolbar>
-                        </v-flex>
-                    </v-layout>
-                    <v-layout row>
-                        <v-flex align-content-center xs12>
-                            <v-card height="500px" >
-                                <v-progress-circular class="map-loading" v-if="isMapLoading" indeterminate :size="70" :width="7" color="green"></v-progress-circular>
-                                <template v-if="!isMapLoading" >
-                                    <canvas id="canvas" width="500" height="500" ></canvas>
-                                </template>
-                            </v-card>
-                        </v-flex>
-                    </v-layout>
-                </template>
-            </v-flex>
         </v-layout>
     </v-container>
 </template>
@@ -174,12 +160,14 @@ import 'vue2-dropzone/dist/vue2Dropzone.css'
 import { validationMixin } from 'vuelidate'
 import { required, between } from 'vuelidate/lib/validators'
 import Multiselect from 'vue-multiselect'
+import Map from './Map'
 
 export default {
   name: 'home',
   components: {
       vueDropzone: vue2Dropzone,
-      multiselect: Multiselect
+      multiselect: Multiselect,
+      Map: Map
   },
   mixins: [ validationMixin ],
   validations: {
@@ -237,13 +225,10 @@ export default {
             algorithm: this.algType,
             points: this.currentPoints
         }
-        this.$http.post('http://localhost:9090/tsp', model).then(
+        this.$http.get('http://localhost:3000/points').then(
             val => {
                 this.result = val.body;
                 this.isMapLoading = false;
-                setTimeout(() => {
-                    this.drawPoints();
-                }, 1000);
             }
         );
       },
@@ -283,7 +268,7 @@ export default {
                     routes: routes
                 });
             }
-            this.currentPoints = tmp;
+            this.currentPoints = tmp.splice(0, tmp.length-1);
           }
       },
       readLoadedFile () {
@@ -298,26 +283,6 @@ export default {
               reader.readAsText(files[0]);
           } catch (e) {
               console.warn('Wrong file format!!!');
-          }
-      },
-      drawPoints () {
-          this.result.forEach(el => { el.x = el.x*5, el.y = el.y*5 });
-          var canvas = document.querySelector('#canvas');
-          if(canvas.getContext) {
-              var ctx = canvas.getContext('2d');
-
-              for(let i = 0; i < this.result.length; i++) {
-                  /// ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i+1) + ', ' + Math.floor(255 - 42.5 * i+1) + ',' + '0)';
-                  ctx.fillStyle = 'red';
-                  ctx.fillText('' + i, this.result[i].x, this.result[i].y);
-                  try {
-                      ctx.beginPath();
-                      ctx.moveTo(this.result[i].x, this.result[i].y);
-                      ctx.lineTo(this.result[i+1].x, this.result[i+1].y);
-                      ctx.closePath();
-                      ctx.stroke();
-                  } catch (e) {}
-              }
           }
       },
       saveFile () {
