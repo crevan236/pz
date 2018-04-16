@@ -1,7 +1,10 @@
 <template>
     <v-container>
         <v-layout row>
-            <v-flex xs12>
+            <v-flex class="loading-wrapper" xs12>
+                <div v-if="isLoading" class="loading-overlay">
+                    <div><img src="../assets/three-dots.svg" class="loader" /></div>
+                </div>
                 <div id="scene"></div>
             </v-flex>
         </v-layout>
@@ -12,7 +15,7 @@ import Konva from 'konva';
 
 export default {
   name: 'Map',
-  props: ['points', 'paths'],
+  props: ['points', 'paths', 'loading'],
   data () {
     return {
         stage: null,
@@ -27,7 +30,8 @@ export default {
         stageWidth: 500,
         stageHeight: 1,
         xScale: 1,
-        yScale: 1
+        yScale: 1,
+        isLoading: false
     }
   },
   watch: {
@@ -40,6 +44,9 @@ export default {
           if (newVal) {
               this.fillPathsLayer(newVal);
           }
+      },
+      loading: function (val) {
+          this.isLoading = val;
       }
   },
   mounted: function () {
@@ -112,7 +119,6 @@ export default {
           this.stage.width(this.stageWidth);
           this.stage.height(this.stageHeight);
           // this.stage.scale({x: scale, y: scale});
-          console.warn();
           this.stage.draw();
       },
       scalePoints(points) {
@@ -139,5 +145,25 @@ export default {
 }
 </script>
 <style scoped>
-
+.loading-wrapper {
+    position: relative;
+}
+.loading-overlay {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.2);
+    position: absolute;
+    top: 0;
+    left: 0;
+    align-items: center;
+}
+.loading-overlay div {
+    display: block;
+    width: 100%;
+    flex-direction: row;
+}
+.loading {
+    margin: 0 auto;
+}
 </style>

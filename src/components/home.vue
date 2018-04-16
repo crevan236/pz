@@ -2,7 +2,7 @@
     <v-container grid-list-md>
         <v-layout row>
             <v-flex xs12>
-                <Map :points="currentPoints" :paths="result" ></Map>
+                <Map :points="currentPoints" :paths="result" :loading="isMapLoading" ></Map>
             </v-flex>
         </v-layout>
         <v-layout row>
@@ -63,6 +63,7 @@
                                           :multiple="true"
                                           placeholder="Drogi:"
                                           :customLabel="generateCustomLabel"
+                                          :track-by="name"
                                           >
                                         </multiselect>
                                     </v-flex>
@@ -193,7 +194,7 @@ export default {
           maxFiles: 1,
           acceptedFiles: 'application/json'
       },
-      currentPoint: {x: null, y: null, routes: []},
+      currentPoint: {name: Date.now(), x: null, y: null, routes: []},
       currentPoints: []
     }
   },
@@ -226,10 +227,10 @@ export default {
             points: this.currentPoints
         }
         this.$http.get('http://localhost:3000/points').then(
-            val => {
-                this.result = val.body;
-                this.isMapLoading = false;
-            }
+        val => {
+            this.result = val.body;
+            this.isMapLoading = false;
+        }
         );
       },
       onPointAssginedPush () {
@@ -247,26 +248,34 @@ export default {
           const tmp = {
               name: Date.now(),
               x: this.currentPoint.x,
-              y: this.currentPoint.y
+              y: this.currentPoint.y,
+              routes: this.currentPoint.routes
           }
           this.currentPoints.push(tmp);
+          console.warn(tmp.routes);
           this.currentPoint.x = null;
           this.currentPoint.y = null;
+          this.currentPoint.routes = [];
       },
       generatePoints () {
           if (this.amountOfPoints <= 100) {
             var tmp = [];
             for (var i = 0; i < this.amountOfPoints; i++) {
-                var routes = [];
-                for (var j = 0; j < Math.round((Math.random() * 100)%this.amountOfPoints) + 3; j++) {
-                    routes.push(Math.round((Math.random() * 100)%this.amountOfPoints));
-                }
                 tmp.push({
                     name: '' + Date.now() + Math.random(),
                     x: Math.random() * 100,
                     y: Math.random() * 100,
-                    routes: routes
+                    routes: []
                 });
+            }
+            for (let el of tmp) {
+                const routes = [];
+                for (var j = 0; j < Math.round((Math.random() * 100)%this.amountOfPoints) + 3; j++) {
+                    let n = Math.round((Math.random() * 100)%this.amountOfPoints - 1);
+                    n = n < 0 ? 0 : n;
+                    routes.push(tmp[n].name);
+                }
+                el.routes = routes;
             }
             this.currentPoints = tmp.splice(0, tmp.length-1);
           }
