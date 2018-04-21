@@ -50,7 +50,7 @@ public class PermutationAlgorithmService extends AlgorithmService {
         for(Point tmpNextPoint : entry.getValue().getPoints()) {
           if(!tmpPoint.equals(tmpNextPoint)) {
             boolean isRoute = false;
-            for(Integer tmpRoute : tmpPoint.getRoutes()) {
+            for(String tmpRoute : tmpPoint.getRoutes()) {
               if (tmpRoute.equals(tmpNextPoint.getName())) {
                 isRoute = true;
               }

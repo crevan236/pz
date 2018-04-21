@@ -9,7 +9,7 @@ public class Point implements Serializable {
   private double x;
   private double y;
   private boolean visited;
-  private List<Integer> routes = new ArrayList<>();
+  private List<String> routes = new ArrayList<>();
 
 
   public Point() {
@@ -55,11 +55,11 @@ public class Point implements Serializable {
     this.visited = visited;
   }
 
-  public List<Integer> getRoutes() {
+  public List<String> getRoutes() {
     return routes;
   }
 
-  public void setRoutes(List<Integer> routes) {
+  public void setRoutes(List<String> routes) {
     this.routes = routes;
   }
 

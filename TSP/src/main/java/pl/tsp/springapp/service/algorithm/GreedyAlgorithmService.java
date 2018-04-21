@@ -46,8 +46,8 @@ public class GreedyAlgorithmService extends AlgorithmService {
     for (int i = 0; i < points.size(); i++) {
       if (i != start && !points.get(i).isVisited()) {
         existRoute = false;
-        for (Integer tmpRoute : points.get(start).getRoutes()) {
-          if (i == tmpRoute)
+        for (String tmpRoute : points.get(start).getRoutes()) {
+          if (points.get(i).getName().equals(tmpRoute))
             existRoute = true;
         }
         double tmpDistance = calcDistance(points.get(start), points.get(i));
