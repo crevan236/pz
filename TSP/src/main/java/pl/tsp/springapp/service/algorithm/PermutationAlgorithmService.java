@@ -17,8 +17,6 @@ public class PermutationAlgorithmService extends AlgorithmService {
 
     perm(points, 0);
 
-    System.out.println(routesMap.size());
-
     return routesMap;
   }
 
@@ -39,6 +37,35 @@ public class PermutationAlgorithmService extends AlgorithmService {
         perm(points, n + 1);
         Collections.swap(points, i, n);
       }
+    }
+  }
+
+  @Override
+  protected void checkRoute(Map<Integer, Route> routesMap) throws Exception {
+    for(Map.Entry<Integer, Route> entry : routesMap.entrySet()) {
+      Route route = entry.getValue();
+      boolean correctRoute = true;
+      double distance = 0;
+      for(Point tmpPoint : route.getPoints()) {
+        for(Point tmpNextPoint : entry.getValue().getPoints()) {
+          if(!tmpPoint.equals(tmpNextPoint)) {
+            boolean isRoute = false;
+            for(Integer tmpRoute : tmpPoint.getRoutes()) {
+              if (tmpRoute.equals(tmpNextPoint.getName())) {
+                isRoute = true;
+              }
+            }
+            if(!isRoute)
+              correctRoute = false;
+
+            distance += calcDistance(tmpPoint, tmpNextPoint);
+          }
+        }
+      }
+      if(!correctRoute)
+        entry.setValue(null);
+
+      route.setLength(distance);
     }
   }
 }

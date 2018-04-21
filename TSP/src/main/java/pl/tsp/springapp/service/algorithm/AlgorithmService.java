@@ -11,7 +11,7 @@ public abstract class AlgorithmService {
 
   public Queue<Point> manageAlgorithm(List<Point> points) throws Exception {
     Map<Integer, Route> routeMap = setRoute(points);
-    calcRoute(routeMap);
+    checkRoute(routeMap);
     return findMinRoute(routeMap);
   }
 
@@ -24,14 +24,14 @@ public abstract class AlgorithmService {
     return Math.sqrt(xDistance + yDistance);
   }
 
-  private void calcRoute(Map<Integer, Route> routesMap) throws Exception {
+  protected void checkRoute(Map<Integer, Route> routesMap) throws Exception {
     for(Map.Entry<Integer, Route> entry : routesMap.entrySet()){
       Route route = entry.getValue();
       double distance = 0;
       for(Point tmpPoint : entry.getValue().getPoints()){
         for(Point tmpPoint2 : entry.getValue().getPoints()) {
           if(!tmpPoint.equals(tmpPoint2))
-          distance += calcDistance(tmpPoint, tmpPoint2);
+            distance += calcDistance(tmpPoint, tmpPoint2);
         }
       }
       route.setLength(distance);
