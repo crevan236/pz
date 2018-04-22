@@ -226,7 +226,7 @@ export default {
             algorithm: this.algType,
             points: this.currentPoints
         }
-        this.$http.get('http://localhost:3000/points').then(
+        this.$http.post('http://localhost:9090/tsp', model).then(
         val => {
             this.result = val.body;
             this.isMapLoading = false;
@@ -269,15 +269,20 @@ export default {
                 });
             }
             for (let el of tmp) {
-                const routes = [];
-                for (var j = 0; j < Math.round((Math.random() * 100)%this.amountOfPoints) + 3; j++) {
-                    let n = Math.round((Math.random() * 100)%this.amountOfPoints - 1);
+              const routes = [];
+              let k;
+              do {
+                k = Math.round((Math.random() * 100) % this.amountOfPoints);
+              } while (k < this.amountOfPoints / 3);
+              for (var j = 0; j < k; j++) {
+                    let n = Math.round((Math.random() * 100) % this.amountOfPoints - 1);
                     n = n < 0 ? 0 : n;
                     routes.push(tmp[n].name);
                 }
                 el.routes = routes;
             }
-            this.currentPoints = tmp.splice(0, tmp.length-1);
+            // console.warn(tmp);
+            this.currentPoints = tmp.slice(0);
           }
       },
       readLoadedFile () {
