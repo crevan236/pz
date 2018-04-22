@@ -63,13 +63,17 @@ public class Point implements Serializable {
     this.routes = routes;
   }
 
+  public double calcDistance(Point point) throws Exception {
+    double xDistance = Math.pow(getX() - point.getX(), 2);
+    double yDistance = Math.pow(getY() - point.getY(), 2);
+
+    return Math.sqrt(xDistance + yDistance);
+  }
+
   @Override
   public String toString() {
-    return "Point{" +
-      "name='" + name + '\'' +
+    return " name='" + name + '\'' +
       ", x=" + x +
-      ", y=" + y +
-      ", routes=" + routes +
-      '}';
+      ", y=" + y;
   }
 }

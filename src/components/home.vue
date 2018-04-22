@@ -101,6 +101,11 @@
                                         :label="'Zachłanny rozszerzony'"
                                         :value="'GREEDYS'"
                                       ></v-radio>
+                                      <v-radio
+                                        :key="4"
+                                        :label="'Genetyczny'"
+                                        :value="'GENETIC'"
+                                      ></v-radio>
                                     </v-radio-group>
                             </v-card-text>
                             <v-card-actions>

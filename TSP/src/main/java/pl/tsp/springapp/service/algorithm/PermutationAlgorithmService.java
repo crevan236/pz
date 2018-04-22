@@ -1,6 +1,7 @@
 package pl.tsp.springapp.service.algorithm;
 
 import pl.tsp.springapp.dto.Point;
+import pl.tsp.springapp.dto.Population;
 import pl.tsp.springapp.dto.Route;
 
 import java.util.*;
@@ -9,7 +10,7 @@ public class PermutationAlgorithmService extends AlgorithmService {
   Map<Integer, Route> routesMap = new HashMap<>();
   int counter = 0;
 
-  protected Map<Integer, Route> setRoute(List<Point> points) throws Exception {
+  protected Population setRoute(List<Point> points) throws Exception {
     System.out.println("PermutationAlgorithmService");
 
     if (points.size() > 10)
@@ -17,18 +18,24 @@ public class PermutationAlgorithmService extends AlgorithmService {
 
     perm(points, 0);
 
-    return routesMap;
+    Population population = new Population(routesMap.size());
+    for (Map.Entry<Integer, Route> entry : routesMap.entrySet()) {
+      population.setRoute(entry.getKey(), entry.getValue());
+    }
+
+    checkRoute(population);
+
+    return population;
   }
 
   private void perm(List<Point> points, int n) {
     if (n >= points.size() - 1) {
-      Queue<Point> route = new LinkedList<>();
+      List<Point> route = new ArrayList<>();
 
       for (Point tmpPoint : points) {
-        route.offer(tmpPoint);
+        route.add(tmpPoint);
       }
 
-      route.offer(route.element());
       routesMap.put(counter, new Route(route));
       ++this.counter;
     } else {
@@ -37,35 +44,6 @@ public class PermutationAlgorithmService extends AlgorithmService {
         perm(points, n + 1);
         Collections.swap(points, i, n);
       }
-    }
-  }
-
-  @Override
-  protected void checkRoute(Map<Integer, Route> routesMap) throws Exception {
-    for(Map.Entry<Integer, Route> entry : routesMap.entrySet()) {
-      Route route = entry.getValue();
-      boolean correctRoute = true;
-      double distance = 0;
-      for(Point tmpPoint : route.getPoints()) {
-        for(Point tmpNextPoint : entry.getValue().getPoints()) {
-          if(!tmpPoint.equals(tmpNextPoint)) {
-            boolean isRoute = false;
-            for(String tmpRoute : tmpPoint.getRoutes()) {
-              if (tmpRoute.equals(tmpNextPoint.getName())) {
-                isRoute = true;
-              }
-            }
-            if(!isRoute)
-              correctRoute = false;
-
-            distance += calcDistance(tmpPoint, tmpNextPoint);
-          }
-        }
-      }
-      if(!correctRoute)
-        entry.setValue(null);
-
-      route.setLength(distance);
     }
   }
 }
