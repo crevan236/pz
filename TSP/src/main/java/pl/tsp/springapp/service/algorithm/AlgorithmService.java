@@ -33,7 +33,10 @@ public abstract class AlgorithmService {
     boolean exist = false;
 
     for (int i = 0; i < population.getRoutes().length; i++) {
-      if ((fittest == null || fittest.getFitness() <= population.getRoute(i).getFitness())) {
+      if(population.getRoute(i) == null)
+        continue;
+
+      if (fittest == null || (fittest != null && fittest.getFitness() <= population.getRoute(i).getFitness())) {
         if (population.getRoute(i).isCorrectRoute()) {
           fittest = population.getRoute(i);
           exist = true;
