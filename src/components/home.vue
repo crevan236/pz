@@ -47,7 +47,7 @@
                                     ></v-text-field>
                                 </v-flex>
                                 <v-flex>
-                                    <v-btn color="orange" class="white--text" @click="generatePoints" :disabled="$v.amountOfPoints.$invalid" ><v-icon>play_arrow</v-icon></v-btn>
+                                    <v-btn color="orange" class="white--text" @click="generatePointsAlltoAll" :disabled="$v.amountOfPoints.$invalid" ><v-icon>play_arrow</v-icon></v-btn>
                                 </v-flex>
                             </template>
                             <v-flex v-if="pointsType == 3" >
@@ -156,177 +156,214 @@
 </template>
 
 <script>
-import vue2Dropzone from 'vue2-dropzone'
-import 'vue2-dropzone/dist/vue2Dropzone.css'
-import { validationMixin } from 'vuelidate'
-import { required, between } from 'vuelidate/lib/validators'
-import Multiselect from 'vue-multiselect'
-import Map from './Map'
+import vue2Dropzone from "vue2-dropzone";
+import "vue2-dropzone/dist/vue2Dropzone.css";
+import { validationMixin } from "vuelidate";
+import { required, between } from "vuelidate/lib/validators";
+import Multiselect from "vue-multiselect";
+import Map from "./Map";
 
 export default {
-  name: 'home',
+  name: "home",
   components: {
-      vueDropzone: vue2Dropzone,
-      multiselect: Multiselect,
-      Map: Map
+    vueDropzone: vue2Dropzone,
+    multiselect: Multiselect,
+    Map: Map
   },
-  mixins: [ validationMixin ],
+  mixins: [validationMixin],
   validations: {
-      amountOfPoints: { between: between(0, 100) },
-      currentPoint: {
-          x: { between: between(0, 100) },
-          y: { between: between(0, 100) }
-      }
+    amountOfPoints: { between: between(0, 100) },
+    currentPoint: {
+      x: { between: between(0, 100) },
+      y: { between: between(0, 100) }
+    }
   },
-  data () {
+  data() {
     return {
       pointsType: 1,
-      algType: 'GREEDY',
+      algType: "GREEDY",
       isMapLoading: false,
       pointsAssigned: [],
       amountOfPoints: null,
       result: [],
-      dropzone: '',
+      dropzone: "",
       dropzoneOptions: {
-          url: 'https://localhost:3000',
-          thumbnailWidth: 50,
-          maxFilesize: 0.5,
-          maxFiles: 1,
-          acceptedFiles: 'application/json'
+        url: "https://localhost:3000",
+        thumbnailWidth: 50,
+        maxFilesize: 0.5,
+        maxFiles: 1,
+        acceptedFiles: "application/json"
       },
-      currentPoint: {name: Date.now(), x: null, y: null, routes: []},
+      currentPoint: { name: Date.now(), x: null, y: null, routes: [] },
       currentPoints: []
-    }
+    };
   },
   computed: {
-      nofpErrors () {
-        const errors = []
-        if (!this.$v.amountOfPoints.$dirty) return errors
-        !this.$v.amountOfPoints.between && errors.push('Wartość powinna być pomiędzy 0 a 100')
-        return errors
-      },
-      cordsxErrors () {
-        const errors = []
-        if (!this.$v.currentPoint.x.$dirty) return errors
-        !this.$v.currentPoint.x.between && errors.push('Wartość powinna być pomiędzy 0 a 100')
-        return errors
-      },
-      cordsyErrors () {
-        const errors = []
-        if (!this.$v.currentPoint.y.$dirty) return errors
-        !this.$v.currentPoint.y.between && errors.push('Wartość powinna być pomiędzy 0 a 100')
-        return errors
-      }
+    nofpErrors() {
+      const errors = [];
+      if (!this.$v.amountOfPoints.$dirty) return errors;
+      !this.$v.amountOfPoints.between &&
+        errors.push("Wartość powinna być pomiędzy 0 a 100");
+      return errors;
+    },
+    cordsxErrors() {
+      const errors = [];
+      if (!this.$v.currentPoint.x.$dirty) return errors;
+      !this.$v.currentPoint.x.between &&
+        errors.push("Wartość powinna być pomiędzy 0 a 100");
+      return errors;
+    },
+    cordsyErrors() {
+      const errors = [];
+      if (!this.$v.currentPoint.y.$dirty) return errors;
+      !this.$v.currentPoint.y.between &&
+        errors.push("Wartość powinna być pomiędzy 0 a 100");
+      return errors;
+    }
   },
   methods: {
-      onRoadCount () {
-        this.isMapLoading = true;
+    onRoadCount() {
+      this.isMapLoading = true;
 
-        var model = {
-            algorithm: this.algType,
-            points: this.currentPoints
-        }
-        this.$http.get('http://localhost:3000/points').then(
-        val => {
-            this.result = val.body;
-            this.isMapLoading = false;
-        }
-        );
-      },
-      onPointAssginedPush () {
-          this.pointsAssigned.push({x: 0, y: 0, roads: []});
-      },
-      onFileAdded (file) {
-          this.readLoadedFile();
-      },
-      onFileProgress (file, progress, bytes) {
-          if (progress === 100) {
-              this.readLoadedFile();
-          }
-      },
-      onAddPoint () {
-          const tmp = {
-              name: Date.now(),
-              x: this.currentPoint.x,
-              y: this.currentPoint.y,
-              routes: this.currentPoint.routes
-          }
-          this.currentPoints.push(tmp);
-          console.warn(tmp.routes);
-          this.currentPoint.x = null;
-          this.currentPoint.y = null;
-          this.currentPoint.routes = [];
-      },
-      generatePoints () {
-          if (this.amountOfPoints <= 100) {
-            var tmp = [];
-            for (var i = 0; i < this.amountOfPoints; i++) {
-                tmp.push({
-                    name: '' + Date.now() + Math.random(),
-                    x: Math.random() * 100,
-                    y: Math.random() * 100,
-                    routes: []
-                });
-            }
-            for (let el of tmp) {
-                const routes = [];
-                for (var j = 0; j < Math.round((Math.random() * 100)%this.amountOfPoints) + 3; j++) {
-                    let n = Math.round((Math.random() * 100)%this.amountOfPoints - 1);
-                    n = n < 0 ? 0 : n;
-                    routes.push(tmp[n].name);
-                }
-                el.routes = routes;
-            }
-            this.currentPoints = tmp.splice(0, tmp.length-1);
-          }
-      },
-      readLoadedFile () {
-          var files = this.$refs.fileDrop.getAcceptedFiles();
-          var reader = new FileReader();
-          reader.onloadend = (f) => {
-              var tmp = JSON.parse(f.target.result);
-
-              this.currentPoints = tmp;
-          }
-          try {
-              reader.readAsText(files[0]);
-          } catch (e) {
-              console.warn('Wrong file format!!!');
-          }
-      },
-      saveFile () {
-        let newFile = null;
-        try {
-            newFile = new File(JSON.stringify(this.currentPoints), "generatedPoints.json", { type: 'application/json' });
-        } catch (e) {
-            console.warn('blob');
-            newFile = new Blob([JSON.stringify(this.currentPoints)], { type: 'text/plain' });
-        }
-        const url = URL.createObjectURL(newFile);
-        let btn = document.querySelector('#fileDownloader');
-        btn.href = url;
-        btn.click();
-      },
-      generateCustomLabel (obj) {
-          return `Punkt: ${this.currentPoints.findIndex(el => el.name === obj.name)}`;
+      var model = {
+        algorithm: this.algType,
+        points: this.currentPoints
+      };
+      this.$http.get("http://localhost:3000/points").then(val => {
+        this.result = val.body;
+        this.isMapLoading = false;
+      });
+    },
+    onPointAssginedPush() {
+      this.pointsAssigned.push({ x: 0, y: 0, roads: [] });
+    },
+    onFileAdded(file) {
+      this.readLoadedFile();
+    },
+    onFileProgress(file, progress, bytes) {
+      if (progress === 100) {
+        this.readLoadedFile();
       }
+    },
+    onAddPoint() {
+      const tmp = {
+        name: Date.now(),
+        x: this.currentPoint.x,
+        y: this.currentPoint.y,
+        routes: this.currentPoint.routes
+      };
+      this.currentPoints.push(tmp);
+      console.warn(tmp.routes);
+      this.currentPoint.x = null;
+      this.currentPoint.y = null;
+      this.currentPoint.routes = [];
+    },
+    generatePoints() {
+      if (this.amountOfPoints <= 100) {
+        var tmp = [];
+        for (var i = 0; i <= this.amountOfPoints; i++) {
+          tmp.push({
+            name: "" + Date.now() + Math.random(),
+            x: Math.random() * 100,
+            y: Math.random() * 100,
+            routes: []
+          });
+        }
+        for (let el of tmp) {
+          const routes = [];
+          for (
+            var j = 0;
+            j < Math.round((Math.random() * 100) % this.amountOfPoints) + 3;
+            j++
+          ) {
+            let n = Math.round((Math.random() * 100) % this.amountOfPoints - 1);
+            n = n < 0 ? 0 : n;
+            routes.push(tmp[n].name);
+          }
+          el.routes = routes;
+        }
+        this.currentPoints = tmp.splice(0, tmp.length - 1);
+      }
+    },
+    generatePointsAlltoAll() {
+      if (this.amountOfPoints <= 100) {
+        var tmp = [];
+        for (var i = 0; i <= this.amountOfPoints; i++) {
+          tmp.push({
+            name: "" + Date.now() + Math.random(),
+            x: Math.random() * 100,
+            y: Math.random() * 100,
+            routes: []
+          });
+        }
+        for (let el of tmp) {
+            const routes = [];
+            for (let element of tmp) {
+                if (element != el) {
+                    routes.push(element.name);
+                }
+            }
+            el.routes = tmp;
+        }
+        this.currentPoints = tmp.splice(0, tmp.length - 1);
+        console.warn(this.currentPoints);
+      }
+    },
+    readLoadedFile() {
+      var files = this.$refs.fileDrop.getAcceptedFiles();
+      var reader = new FileReader();
+      reader.onloadend = f => {
+        var tmp = JSON.parse(f.target.result);
+
+        this.currentPoints = tmp;
+      };
+      try {
+        reader.readAsText(files[0]);
+      } catch (e) {
+        console.warn("Wrong file format!!!");
+      }
+    },
+    saveFile() {
+      let newFile = null;
+      try {
+        newFile = new File(
+          JSON.stringify(this.currentPoints),
+          "generatedPoints.json",
+          { type: "application/json" }
+        );
+      } catch (e) {
+        console.warn("blob");
+        newFile = new Blob([JSON.stringify(this.currentPoints)], {
+          type: "text/plain"
+        });
+      }
+      const url = URL.createObjectURL(newFile);
+      let btn = document.querySelector("#fileDownloader");
+      btn.href = url;
+      btn.click();
+    },
+    generateCustomLabel(obj) {
+      return `Punkt: ${this.currentPoints.findIndex(
+        el => el.name === obj.name
+      )}`;
+    }
   }
-}
+};
 </script>
 <style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
 <style scoped>
-    .map-loading {
-        margin-top: 180px;
-    }
-    .scrolling-box {
-        max-height: 350px;
-        overflow-y: scroll;
-    }
-    .points-title {
-        text-align: left;
-        padding: 20px 0px;
-    }
-    #canvas {
-        border: 1px solid #ddd;
-    }
+.map-loading {
+  margin-top: 180px;
+}
+.scrolling-box {
+  max-height: 350px;
+  overflow-y: scroll;
+}
+.points-title {
+  text-align: left;
+  padding: 20px 0px;
+}
+#canvas {
+  border: 1px solid #ddd;
+}
 </style>

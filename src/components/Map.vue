@@ -62,6 +62,7 @@ export default {
       },
       fillPathsLayer (paths) {
           if (paths) {
+            this.stage = new Konva.stage();
             paths = this.scalePaths(paths);
             this.pathsLayer = new Konva.Layer();
             const points = [];
@@ -95,7 +96,7 @@ export default {
                     strokeWidth: this.pointsData.strokeWidth
                 });
                 this.pointsLayer.add(circle);
-                for (let i = 1; i < points.length - 1; i++) {
+                for (let i = 1; i < points.length; i++) {
                     const circle = new Konva.Circle({
                         x: points[i].x,
                         y: points[i].y,
@@ -129,8 +130,8 @@ export default {
           this.xScale = this.stageWidth / maxX; 
           this.yScale = this.stageHeight / maxY;
           points.forEach(el => {
-              el.x = el.x * this.xScale;
-              el.y = el.y * this.yScale;
+              el.x = el.x * this.xScale - 5;
+              el.y = el.y * this.yScale - 5;
           });
           return points;
       },
