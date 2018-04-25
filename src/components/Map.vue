@@ -85,7 +85,6 @@ export default {
           try {
             this.scaleStage();
             if (points) {
-                this.createStage();
                 points = this.scalePoints(points);
                 this.pointsLayer = new Konva.Layer();
                 const circle = new Konva.Circle({

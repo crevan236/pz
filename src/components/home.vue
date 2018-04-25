@@ -87,6 +87,7 @@
                             <v-card-text>
                                     <v-radio-group v-model="algType">
                                       <v-radio
+                                        v-if="amountOfPoints < 10"
                                         :key="1"
                                         :label="'Permutacje'"
                                         :value="'PERM'"
@@ -102,6 +103,7 @@
                                         :value="'GREEDYS'"
                                       ></v-radio>
                                       <v-radio
+                                        v-if="amountOfPoints < 100"
                                         :key="4"
                                         :label="'Genetyczny'"
                                         :value="'GENETIC'"
@@ -321,12 +323,14 @@ export default {
         var tmp = JSON.parse(f.target.result);
 
         this.currentPoints = tmp;
+        this.amountOfPoints = tmp.length;
       };
       try {
         reader.readAsText(files[0]);
       } catch (e) {
         console.warn("Wrong file format!!!");
       }
+      this.$refs.fileDrop.removeAllFiles(true);
     },
     saveFile() {
       let newFile = null;
