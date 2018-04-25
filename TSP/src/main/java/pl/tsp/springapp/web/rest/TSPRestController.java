@@ -9,6 +9,7 @@ import pl.tsp.springapp.dto.Point;
 import pl.tsp.springapp.dto.TSP;
 import pl.tsp.springapp.service.TSPService;
 
+import java.util.List;
 import java.util.Queue;
 
 
@@ -27,7 +28,7 @@ public class TSPRestController {
   @RequestMapping(method = RequestMethod.POST)
   private ResponseEntity setRoute(@RequestBody TSP tsp){
     try {
-      Queue<Point> route = this.tspService.setRoute(tsp);
+      List<Point> route = this.tspService.setRoute(tsp);
       return new ResponseEntity(route, HttpStatus.OK);
     }
     catch(Exception e){

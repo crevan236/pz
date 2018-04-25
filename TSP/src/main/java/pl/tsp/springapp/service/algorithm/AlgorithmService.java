@@ -2,6 +2,7 @@ package pl.tsp.springapp.service.algorithm;
 
 import org.springframework.stereotype.Service;
 import pl.tsp.springapp.dto.Point;
+import pl.tsp.springapp.dto.Population;
 import pl.tsp.springapp.dto.Route;
 
 import java.util.*;
@@ -9,52 +10,76 @@ import java.util.*;
 @Service
 public abstract class AlgorithmService {
 
-  public Queue<Point> manageAlgorithm(List<Point> points) throws Exception {
-    Map<Integer, Route> routeMap = setRoute(points);
-    calcRoute(routeMap);
-    return findMinRoute(routeMap);
+  public List<Point> manageAlgorithm(List<Point> points) throws Exception {
+    System.out.println(new Route(points).getLength());
+
+    if(points.size() <= 2)
+      return points;
+
+    Population population = setRoute(points);
+    Route minRoute = findMinRoute(population);
+    System.out.println(minRoute.getLength());
+    System.out.println("********************");
+
+    addEndPoint(minRoute);
+
+    return minRoute.getPoints();
   }
 
-  protected abstract Map<Integer, Route> setRoute(List<Point> points) throws Exception;
+  protected abstract Population setRoute(List<Point> points) throws Exception;
 
-  protected double calcDistance(Point point1, Point point2) throws Exception {
-    double xDistance = Math.pow(point2.getX() - point1.getX(), 2);
-    double yDistance = Math.pow(point2.getY() - point1.getY(), 2);
+  protected Route findMinRoute(Population population) throws Exception {
+    Route fittest = null;
+    boolean exist = false;
 
-    return Math.sqrt(xDistance + yDistance);
-  }
+    for (int i = 0; i < population.getRoutes().length; i++) {
+      if(population.getRoute(i) == null)
+        continue;
 
-  private void calcRoute(Map<Integer, Route> routesMap) throws Exception {
-    for(Map.Entry<Integer, Route> entry : routesMap.entrySet()){
-      Route route = entry.getValue();
-      double distance = 0;
-      for(Point tmpPoint : entry.getValue().getPoints()){
-        for(Point tmpPoint2 : entry.getValue().getPoints()) {
-          if(!tmpPoint.equals(tmpPoint2))
-          distance += calcDistance(tmpPoint, tmpPoint2);
+      if (fittest == null || (fittest != null && fittest.getFitness() <= population.getRoute(i).getFitness())) {
+        if (population.getRoute(i).isCorrectRoute()) {
+          fittest = population.getRoute(i);
+          exist = true;
         }
       }
-      route.setLength(distance);
+    }
+
+    if (!exist)
+      throw new Exception("Brak poprawnej trasy!");
+
+    return fittest;
+  }
+
+  protected void checkRoute(Population population) throws Exception {
+    for (Route tmpRoute : population.getRoutes()) {
+      boolean correctRoute = true;
+      for (Point tmpPoint : tmpRoute.getPoints()) {
+        for (Point tmpNextPoint : tmpRoute.getPoints()) {
+          if (!tmpPoint.equals(tmpNextPoint)) {
+            boolean isRoute = false;
+            for (String availableRoutes : tmpPoint.getRoutes()) {
+              if (availableRoutes.equals(tmpNextPoint.getName())) {
+                isRoute = true;
+              }
+            }
+            if (!isRoute)
+              correctRoute = false;
+          }
+        }
+      }
+      tmpRoute.setCorrectRoute(correctRoute);
     }
   }
 
-  private Queue<Point> findMinRoute(Map<Integer, Route> routesMap) throws Exception {
-    Queue<Point> minRoute = new LinkedList<>();
-    double minDistance = 0;
-    for(Map.Entry<Integer, Route> entry : routesMap.entrySet()) {
-      Route route = entry.getValue();
-      if(minDistance == 0 || route.getLength() < minDistance) {
-        minDistance = route.getLength();
-        minRoute = route.getPoints();
-      }
-    }
-    return minRoute;
+  private void addEndPoint(Route route) throws Exception {
+    route.getPoints().add(route.getPoint(0));
   }
 
   protected List<Point> clonePoints(List<Point> points) {
     List<Point> tmpPoints = new ArrayList<>(points.size());
     for (Point tmpPoint : points)
       tmpPoints.add(new Point(tmpPoint));
+
     return tmpPoints;
   }
 }

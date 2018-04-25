@@ -41,7 +41,7 @@ export default {
           }
       },
       paths: function (newVal) {
-          if (newVal) {
+          if (newVal.length > 1) {
               this.fillPathsLayer(newVal);
           }
       },
@@ -62,8 +62,8 @@ export default {
       },
       fillPathsLayer (paths) {
           if (paths) {
-            this.stage = new Konva.stage();
-            paths = this.scalePaths(paths);
+            this.createStage();
+            this.stage.add(this.pointsLayer);
             this.pathsLayer = new Konva.Layer();
             const points = [];
             for (let el of paths) {
@@ -84,7 +84,8 @@ export default {
       fillPointsLayer (points) {
           try {
             this.scaleStage();
-            if  (points) {
+            if (points) {
+                this.createStage();
                 points = this.scalePoints(points);
                 this.pointsLayer = new Konva.Layer();
                 const circle = new Konva.Circle({
@@ -127,7 +128,7 @@ export default {
           const maxX = Math.max.apply(Math, tmp);
           tmp = points.map(el => el.y);
           const maxY = Math.max.apply(Math, tmp);
-          this.xScale = this.stageWidth / maxX; 
+          this.xScale = this.stageWidth / maxX;
           this.yScale = this.stageHeight / maxY;
           points.forEach(el => {
               el.x = el.x * this.xScale - 5;

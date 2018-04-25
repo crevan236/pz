@@ -9,7 +9,7 @@ public class Point implements Serializable {
   private double x;
   private double y;
   private boolean visited;
-  private List<Integer> routes = new ArrayList<>();
+  private List<String> routes = new ArrayList<>();
 
 
   public Point() {
@@ -55,21 +55,25 @@ public class Point implements Serializable {
     this.visited = visited;
   }
 
-  public List<Integer> getRoutes() {
+  public List<String> getRoutes() {
     return routes;
   }
 
-  public void setRoutes(List<Integer> routes) {
+  public void setRoutes(List<String> routes) {
     this.routes = routes;
+  }
+
+  public double calcDistance(Point point) throws Exception {
+    double xDistance = Math.pow(getX() - point.getX(), 2);
+    double yDistance = Math.pow(getY() - point.getY(), 2);
+
+    return Math.sqrt(xDistance + yDistance);
   }
 
   @Override
   public String toString() {
-    return "Point{" +
-      "name='" + name + '\'' +
+    return " name='" + name + '\'' +
       ", x=" + x +
-      ", y=" + y +
-      ", routes=" + routes +
-      '}';
+      ", y=" + y;
   }
 }
