@@ -63,7 +63,6 @@
                                           :multiple="true"
                                           placeholder="Drogi:"
                                           :customLabel="generateCustomLabel"
-                                          :track-by="name"
                                           >
                                         </multiselect>
                                     </v-flex>
@@ -87,7 +86,7 @@
                             <v-card-text>
                                     <v-radio-group v-model="algType">
                                       <v-radio
-                                        v-if="amountOfPoints < 10"
+                                        v-if="currentPoints.length < 10"
                                         :key="1"
                                         :label="'Permutacje'"
                                         :value="'PERM'"
@@ -103,7 +102,7 @@
                                         :value="'GREEDYS'"
                                       ></v-radio>
                                       <v-radio
-                                        v-if="amountOfPoints < 100"
+                                        v-if="currentPoints.length < 100"
                                         :key="4"
                                         :label="'Genetyczny'"
                                         :value="'GENETIC'"
@@ -236,10 +235,14 @@ export default {
         algorithm: this.algType,
         points: this.currentPoints
       };
-      this.$http.get("http://localhost:3000/points").then(val => {
-        this.result = val.body;
-        this.isMapLoading = false;
-      });
+      this.$http.post("http://localhost:3000/result", model)
+        .then(val => {
+          this.result = val.body;
+          this.isMapLoading = false;
+        })
+        .catch(e => {
+          this.isMapLoading = false;
+        });
     },
     onPointAssginedPush() {
       this.pointsAssigned.push({ x: 0, y: 0, roads: [] });
@@ -259,8 +262,7 @@ export default {
         y: this.currentPoint.y,
         routes: this.currentPoint.routes
       };
-      this.currentPoints.push(tmp);
-      console.warn(tmp.routes);
+      this.currentPoints.splice(0, 0, tmp);
       this.currentPoint.x = null;
       this.currentPoint.y = null;
       this.currentPoint.routes = [];
@@ -295,7 +297,7 @@ export default {
     generatePointsAlltoAll() {
       if (this.amountOfPoints <= 100) {
         var tmp = [];
-        for (var i = 0; i <= this.amountOfPoints; i++) {
+        for (let i = 0; i < this.amountOfPoints; i++) {
           tmp.push({
             name: "" + Date.now() + Math.random(),
             x: Math.random() * 100,
@@ -310,9 +312,9 @@ export default {
                     routes.push(element.name);
                 }
             }
-            el.routes = tmp;
+            el.routes = routes;
         }
-        this.currentPoints = tmp.splice(0, tmp.length - 1);
+        this.currentPoints = tmp.splice(0, tmp.length);
         // console.warn(this.currentPoints);
       }
     },

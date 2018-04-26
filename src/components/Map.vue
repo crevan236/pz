@@ -37,12 +37,13 @@ export default {
   watch: {
       points: function (newVal) {
           if (newVal) {
-              this.fillPointsLayer(newVal);
+            const tmp = [...newVal];
+            this.fillPointsLayer(tmp);
           }
       },
       paths: function (newVal) {
           if (newVal.length > 1) {
-              this.fillPathsLayer(newVal);
+              this.fillPathsLayer(newVal.slice(0));
           }
       },
       loading: function (val) {
@@ -62,6 +63,7 @@ export default {
       },
       fillPathsLayer (paths) {
           if (paths) {
+            paths = this.scalePaths(paths);
             this.createStage();
             this.stage.add(this.pointsLayer);
             this.pathsLayer = new Konva.Layer();
@@ -81,11 +83,11 @@ export default {
             this.stage.add(this.pathsLayer);
           }
       },
-      fillPointsLayer (points) {
+      fillPointsLayer (npoints) {
           try {
             this.scaleStage();
-            if (points) {
-                points = this.scalePoints(points);
+            if (npoints) {
+                const points = this.scalePoints(npoints);
                 this.pointsLayer = new Konva.Layer();
                 const circle = new Konva.Circle({
                     x: points[0].x,
@@ -113,27 +115,25 @@ export default {
           } catch(e) {}
       },
       scaleStage () {
-          const container = document.querySelector('#scene');
-          this.stageWidth = container.offsetWidth;
-          this.stageHeight = 400;
-
-          this.stage.width(this.stageWidth);
-          this.stage.height(this.stageHeight);
-          // this.stage.scale({x: scale, y: scale});
-          this.stage.draw();
+        const container = document.querySelector('#scene');
+        this.stageWidth = container.offsetWidth;
+        this.stageHeight = 400
+        this.stage.width(this.stageWidth);
+        this.stage.height(this.stageHeight);
+        this.stage.draw();
       },
       scalePoints(points) {
-          let tmp = points.map(el => el.x);
-          const maxX = Math.max.apply(Math, tmp);
-          tmp = points.map(el => el.y);
-          const maxY = Math.max.apply(Math, tmp);
-          this.xScale = this.stageWidth / maxX;
-          this.yScale = this.stageHeight / maxY;
-          points.forEach(el => {
-              el.x = el.x * this.xScale - 5;
-              el.y = el.y * this.yScale - 5;
-          });
-          return points;
+        let tmp = points.map(el => el.x);
+        const maxX = Math.max.apply(Math, tmp);
+        tmp = points.map(el => el.y);
+        const maxY = Math.max.apply(Math, tmp);
+        this.xScale = this.stageWidth / maxX;
+        this.yScale = this.stageHeight / maxY;
+        points.forEach(el => {
+            el.x = el.x * this.xScale - 5;
+            el.y = el.y * this.yScale - 5;
+        });
+        return points;
       },
       scalePaths (paths) {
           paths.forEach(el => {
