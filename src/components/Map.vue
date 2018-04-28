@@ -31,14 +31,14 @@ export default {
         stageHeight: 1,
         xScale: 1,
         yScale: 1,
-        isLoading: false
+        isLoading: false,
+        prevPointsLength: 0
     }
   },
   watch: {
       points: function (newVal) {
           if (newVal) {
-            const tmp = [...newVal];
-            this.fillPointsLayer(tmp);
+            this.fillPointsLayer(newVal);
           }
       },
       paths: function (newVal) {
@@ -123,16 +123,23 @@ export default {
         this.stage.draw();
       },
       scalePoints(points) {
-        let tmp = points.map(el => el.x);
-        const maxX = Math.max.apply(Math, tmp);
-        tmp = points.map(el => el.y);
-        const maxY = Math.max.apply(Math, tmp);
-        this.xScale = this.stageWidth / maxX;
-        this.yScale = this.stageHeight / maxY;
-        points.forEach(el => {
-            el.x = el.x * this.xScale - 5;
-            el.y = el.y * this.yScale - 5;
-        });
+        const differ = this.prevPointsLength - points.length;
+        if ( differ === -1 || differ === 1) {
+            points[0].x = points[0].x * this.xScale - 5;
+            points[0].y = points[0].y * this.yScale - 5;
+        } else {
+            let tmp = points.map(el => el.x);
+            const maxX = Math.max.apply(Math, tmp);
+            tmp = points.map(el => el.y);
+            const maxY = Math.max.apply(Math, tmp);
+            this.xScale = this.stageWidth / maxX;
+            this.yScale = this.stageHeight / maxY;
+            points.forEach(el => {
+                el.x = el.x * this.xScale - 5;
+                el.y = el.y * this.yScale - 5;
+            });
+        }
+        this.prevPointsLength = this.points.length;
         return points;
       },
       scalePaths (paths) {
