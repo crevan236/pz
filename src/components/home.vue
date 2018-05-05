@@ -58,12 +58,11 @@
                                 <v-layout row>
                                     <v-flex xs10>
                                         <multiselect
-                                          v-model="currentPoint.routes"
+                                          v-model="currentRoutes"
                                           :options="currentPoints"
                                           :multiple="true"
                                           placeholder="Drogi:"
                                           :customLabel="generateCustomLabel"
-                                          :track-by="name"
                                           >
                                         </multiselect>
                                     </v-flex>
@@ -87,7 +86,7 @@
                             <v-card-text>
                                     <v-radio-group v-model="algType">
                                       <v-radio
-                                        v-if="amountOfPoints < 10"
+                                        v-if="currentPoints.length < 10"
                                         :key="1"
                                         :label="'Permutacje'"
                                         :value="'PERM'"
@@ -103,7 +102,7 @@
                                         :value="'GREEDYS'"
                                       ></v-radio>
                                       <v-radio
-                                        v-if="amountOfPoints < 100"
+                                        v-if="currentPoints.length < 100"
                                         :key="4"
                                         :label="'Genetyczny'"
                                         :value="'GENETIC'"
@@ -202,7 +201,8 @@ export default {
         acceptedFiles: "application/json"
       },
       currentPoint: { name: Date.now(), x: null, y: null, routes: [] },
-      currentPoints: []
+      currentPoints: [],
+      currentRoutes: []
     };
   },
   computed: {
@@ -236,10 +236,14 @@ export default {
         algorithm: this.algType,
         points: this.currentPoints
       };
-      this.$http.get("http://localhost:3000/points").then(val => {
-        this.result = val.body;
-        this.isMapLoading = false;
-      });
+      this.$http.post("http://localhost:9090/tsp", model)
+        .then(val => {
+          this.result = val.body;
+          this.isMapLoading = false;
+        })
+        .catch(e => {
+          this.isMapLoading = false;
+        });
     },
     onPointAssginedPush() {
       this.pointsAssigned.push({ x: 0, y: 0, roads: [] });
@@ -257,10 +261,15 @@ export default {
         name: Date.now(),
         x: this.currentPoint.x,
         y: this.currentPoint.y,
-        routes: this.currentPoint.routes
+        routes: []
       };
-      this.currentPoints.push(tmp);
-      console.warn(tmp.routes);
+      this.currentRoutes.forEach(el => {
+        tmp.routes.push(el.name);
+      });
+      this.currentPoints.forEach(el => {
+        el.routes.push(String(tmp.name));
+      });
+      this.currentPoints.splice(0, 0, tmp);
       this.currentPoint.x = null;
       this.currentPoint.y = null;
       this.currentPoint.routes = [];
@@ -295,7 +304,7 @@ export default {
     generatePointsAlltoAll() {
       if (this.amountOfPoints <= 100) {
         var tmp = [];
-        for (var i = 0; i <= this.amountOfPoints; i++) {
+        for (let i = 0; i < this.amountOfPoints; i++) {
           tmp.push({
             name: "" + Date.now() + Math.random(),
             x: Math.random() * 100,
@@ -310,9 +319,9 @@ export default {
                     routes.push(element.name);
                 }
             }
-            el.routes = tmp;
+            el.routes = routes;
         }
-        this.currentPoints = tmp.splice(0, tmp.length - 1);
+        this.currentPoints = tmp.splice(0, tmp.length);
         // console.warn(this.currentPoints);
       }
     },
