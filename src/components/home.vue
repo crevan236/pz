@@ -58,7 +58,7 @@
                                 <v-layout row>
                                     <v-flex xs10>
                                         <multiselect
-                                          v-model="currentPoint.routes"
+                                          v-model="currentRoutes"
                                           :options="currentPoints"
                                           :multiple="true"
                                           placeholder="Drogi:"
@@ -201,7 +201,8 @@ export default {
         acceptedFiles: "application/json"
       },
       currentPoint: { name: Date.now(), x: null, y: null, routes: [] },
-      currentPoints: []
+      currentPoints: [],
+      currentRoutes: []
     };
   },
   computed: {
@@ -235,7 +236,7 @@ export default {
         algorithm: this.algType,
         points: this.currentPoints
       };
-      this.$http.post("http://localhost:3000/result", model)
+      this.$http.post("http://localhost:9090/tsp", model)
         .then(val => {
           this.result = val.body;
           this.isMapLoading = false;
@@ -260,8 +261,14 @@ export default {
         name: Date.now(),
         x: this.currentPoint.x,
         y: this.currentPoint.y,
-        routes: this.currentPoint.routes
+        routes: []
       };
+      this.currentRoutes.forEach(el => {
+        tmp.routes.push(el.name);
+      });
+      this.currentPoints.forEach(el => {
+        el.routes.push(String(tmp.name));
+      });
       this.currentPoints.splice(0, 0, tmp);
       this.currentPoint.x = null;
       this.currentPoint.y = null;

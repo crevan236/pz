@@ -63,7 +63,7 @@ export default {
       },
       fillPathsLayer (paths) {
           if (paths) {
-            paths = this.scalePaths(paths);
+            // paths = this.scalePaths(paths);
             this.createStage();
             this.stage.add(this.pointsLayer);
             this.pathsLayer = new Konva.Layer();
