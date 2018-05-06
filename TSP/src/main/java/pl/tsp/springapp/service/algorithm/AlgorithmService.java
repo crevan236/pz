@@ -54,18 +54,24 @@ public abstract class AlgorithmService {
     for (Route tmpRoute : population.getRoutes()) {
       boolean correctRoute = true;
       for (Point tmpPoint : tmpRoute.getPoints()) {
+        boolean isRoute = true;
         for (Point tmpNextPoint : tmpRoute.getPoints()) {
+          boolean isCorrectNextPoint = false;
           if (!tmpPoint.equals(tmpNextPoint)) {
-            boolean isRoute = false;
             for (String availableRoutes : tmpPoint.getRoutes()) {
               if (availableRoutes.equals(tmpNextPoint.getName())) {
-                isRoute = true;
+                isCorrectNextPoint = true;
+                break;
               }
             }
-            if (!isRoute)
-              correctRoute = false;
+            if(!isCorrectNextPoint) {
+              isRoute = isCorrectNextPoint;
+              break;
+            }
           }
         }
+        if (!isRoute)
+          correctRoute = false;
       }
       tmpRoute.setCorrectRoute(correctRoute);
     }

@@ -10,6 +10,7 @@ public class GeneticAlgorithmService extends AlgorithmService {
   private final double mutationRate = 0.015;
   private final int tournamentSize = 5;
   private final boolean elitism = false;
+  private final boolean checkEveryIteration = false;
   private final int loops = 100;
 
   @Override
@@ -17,13 +18,20 @@ public class GeneticAlgorithmService extends AlgorithmService {
     System.out.println("GeneticAlgorithmService");
 
     Population population = new Population(createNewPopulation(points));
-
     population = evolvePopulation(population);
-    for(int i = 0; i < loops; i++) {
+
+    if(checkEveryIteration)
+      removeIncorrectRoutes(population, points);
+
+    for (int i = 0; i < loops; i++) {
       population = evolvePopulation(population);
+      if(checkEveryIteration)
+        removeIncorrectRoutes(population, points);
     }
 
-    checkRoute(population);
+    if(!checkEveryIteration)
+      checkRoute(population);
+
     return population;
   }
 
@@ -31,12 +39,12 @@ public class GeneticAlgorithmService extends AlgorithmService {
     Population newPopulation = new Population(population.getRoutes().length);
 
     int elitismOffset = 0;
-    if(elitism) {
+    if (elitism) {
       newPopulation.setRoute(0, findMinRoute(population));
       elitismOffset = 1;
     }
 
-    for(int i = elitismOffset; i < newPopulation.getRoutes().length; i++) {
+    for (int i = elitismOffset; i < newPopulation.getRoutes().length; i++) {
       Route parent1 = routeSelection(population);
       Route parent2 = routeSelection(population);
 
@@ -45,7 +53,7 @@ public class GeneticAlgorithmService extends AlgorithmService {
       newPopulation.setRoute(i, children);
     }
 
-    for(int i = elitismOffset; i < newPopulation.getRoutes().length; i++) {
+    for (int i = elitismOffset; i < newPopulation.getRoutes().length; i++) {
       mutate(newPopulation.getRoute(i));
     }
 
@@ -54,7 +62,7 @@ public class GeneticAlgorithmService extends AlgorithmService {
 
   private Route[] createNewPopulation(List<Point> points) throws Exception {
     Route[] routes = new Route[points.size()];
-    for(int i = 0; i < points.size(); i++) {
+    for (int i = 0; i < points.size(); i++) {
       Route newRoute = new Route();
       newRoute = createIndividual(points);
       routes[i] = newRoute;
@@ -62,9 +70,20 @@ public class GeneticAlgorithmService extends AlgorithmService {
     return routes;
   }
 
+  private void removeIncorrectRoutes(Population population, List<Point> points) throws Exception {
+    checkRoute(population);
+
+    for (int i = 0; i < population.getRoutes().length; i++) {
+      if (!population.getRoute(i).isCorrectRoute()) {
+        System.err.println("Create new route");
+        population.setRoute(i, createIndividual(points));
+      }
+    }
+  }
+
   private Route createIndividual(List<Point> points) throws Exception {
     List<Point> newPoints = new ArrayList<>();
-    for(int i = 0; i < points.size(); i++) {
+    for (int i = 0; i < points.size(); i++) {
       newPoints.add(points.get(i));
     }
 
@@ -74,12 +93,12 @@ public class GeneticAlgorithmService extends AlgorithmService {
 
   private Route routeSelection(Population population) throws Exception {
     Population newPopulation = new Population(tournamentSize);
-    for(int i = 0; i < tournamentSize; i++) {
+    for (int i = 0; i < tournamentSize; i++) {
       int randomId = (int) (Math.random() * population.getRoutes().length);
       newPopulation.setRoute(i, population.getRoute(randomId));
     }
 
-    return findMinRoute(population);
+    return findMinRoute(newPopulation);
   }
 
   private Route crossover(Route parent1, Route parent2, int routeSize) {
@@ -91,21 +110,20 @@ public class GeneticAlgorithmService extends AlgorithmService {
     int startPos = (int) (Math.random() * parent1.getPoints().size());
     int endPos = (int) (Math.random() * parent2.getPoints().size());
 
-    for(int i = 0; i < children.getPoints().size(); i++) {
-      if(startPos < endPos && i > startPos && i < endPos) {
+    for (int i = 0; i < children.getPoints().size(); i++) {
+      if (startPos < endPos && i > startPos && i < endPos) {
         children.setPoint(i, parent1Points.get(i));
-      }
-      else if(startPos > endPos) {
-        if(!(i < startPos && i > endPos)) {
+      } else if (startPos > endPos) {
+        if (!(i < startPos && i > endPos)) {
           children.setPoint(i, parent1Points.get(i));
         }
       }
     }
 
-    for(int i = 0; i < parent2Points.size(); i++) {
-      if(!children.getPoints().contains(parent2Points.get(i))) {
-        for(int j = 0; j < children.getPoints().size(); j++) {
-          if(children.getPoint(j) == null) {
+    for (int i = 0; i < parent2Points.size(); i++) {
+      if (!children.getPoints().contains(parent2Points.get(i))) {
+        for (int j = 0; j < children.getPoints().size(); j++) {
+          if (children.getPoint(j) == null) {
             children.setPoint(j, parent2Points.get(i));
             break;
           }
@@ -119,8 +137,8 @@ public class GeneticAlgorithmService extends AlgorithmService {
   private void mutate(Route route) {
     List<Point> points = new ArrayList<>(route.getPoints());
 
-    for(int position1 = 0; position1 < points.size(); position1++) {
-      if(Math.random() < mutationRate) {
+    for (int position1 = 0; position1 < points.size(); position1++) {
+      if (Math.random() < mutationRate) {
 
         int position2 = (int) (points.size() * Math.random());
 
